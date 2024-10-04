@@ -28,7 +28,7 @@ int wsa_startup()
 {
   WSADATA wsaData;
 
-  if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+  if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
   {
     printf("Cannot start up WSA. Error is: %d\n", WSAGetLastError());
     return 1;
@@ -37,6 +37,11 @@ int wsa_startup()
   return 0;
 }
 
+/// <summary>
+/// Assigns address type, port and IP, used later to bind to the socket
+/// </summary>
+/// <param name="addr">Data structure containing connection details</param>
+/// <param name="port">Port number to listen on</param>
 void socket_address_add(struct sockaddr_in* addr, int port)
 {
   memset(addr, 0, sizeof(*addr));
@@ -45,6 +50,25 @@ void socket_address_add(struct sockaddr_in* addr, int port)
   addr->sin_port = htons(port);
 }
 
+/// <summary>
+/// Binds the socket to previously set data
+/// </summary>
+/// <param name="udpSocket">The socket being set</param>
+/// <param name="server">The information being used to bind the socket</param>
+void bind_socket(SOCKET udpSocket, struct sockaddr_in* server) 
+{
+  if(bind(udpSocket, (struct sockaddr*)server, sizeof(*server)) == SOCKET_ERROR)
+  {
+    printf("Cannot bind socket. Error is: %d\n", WSAGetLastError());
+    closesocket(udpSocket);
+    WSACleanup();
+  }
+}
+
+/// <summary>
+/// Creates a looping buffer to recieve packets via UDP
+/// </summary>
+/// <returns>0 or 1 based on performance</returns>
 int start_listening()
 {
   struct sockaddr_in server, client;
@@ -64,15 +88,7 @@ int start_listening()
 
   socket_address_add(&server, 514);
 
-  if(bind(udpSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
-  {
-    printf("Cannot bind socket. Error is: %d\n", WSAGetLastError());
-    closesocket(udpSocket);
-    WSACleanup();
-    return 1;
-  }
-
-  printf("Listening for UDP packets on port 514...\n");
+  bind_socket(udpSocket, &server);
 
   int clientLen = sizeof(client);
   int recvLen;
@@ -81,7 +97,7 @@ int start_listening()
   {
     recvLen = recvfrom(udpSocket, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&client, &clientLen);
 
-    if (recvLen == SOCKET_ERROR)
+    if(recvLen == SOCKET_ERROR)
     {
       printf("Error getting data from socket. Error is: %d\n", WSAGetLastError());
       break;

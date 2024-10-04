@@ -8,6 +8,5 @@
 int main()
 {
 	start_listening();
-
 	return 0;
 }
