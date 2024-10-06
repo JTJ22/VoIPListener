@@ -103,6 +103,7 @@ int start_listening()
       break;
     }
 
+    rtp_filtering(buffer, recvLen);
     buffer[recvLen] = '\0';
   }
 

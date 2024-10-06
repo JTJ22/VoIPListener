@@ -1,0 +1,5 @@
+#ifndef AUDIO_FILE_CREATOR_H_
+#define AUDIO_FILE_CREATOR_H_
+
+
+#endif // !AUDIO_FILE_CREATOR_H_

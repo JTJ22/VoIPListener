@@ -127,11 +127,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AudioFileCreator.c" />
     <ClCompile Include="SocketRec.c" />
     <ClCompile Include="SortingAlgorithms.c" />
     <ClCompile Include="Source.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AudioFileCreator.h" />
     <ClInclude Include="SocketRec.h" />
     <ClInclude Include="SortingAlgorithms.h" />
   </ItemGroup>

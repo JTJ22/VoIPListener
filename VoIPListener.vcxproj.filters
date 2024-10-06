@@ -24,12 +24,18 @@
     <ClCompile Include="SocketRec.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AudioFileCreator.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SortingAlgorithms.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SocketRec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioFileCreator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
