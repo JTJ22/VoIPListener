@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 
-int16_t decode_A_law(int8_t recValue);
-void rtp_filtering(uint8_t* recPacket, int packLength);
+int16_t decode_A_law(uint8_t rec_value);
+void rtp_filtering(uint8_t* rec_packet, int pack_length);
 #endif // SORTING_ALGORITHMS_H_
  

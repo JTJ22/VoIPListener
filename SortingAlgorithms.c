@@ -1,32 +1,46 @@
 #include "SortingAlgorithms.h"
+#include "AudioFileCreator.h"
 
-void rtp_filtering(uint8_t *recPacket, int packLength)
+/// <summary>
+/// Filters a packet based upon the rtp version
+/// </summary>
+/// <param name="recPacket">The packet being checked</param>
+/// <param name="packLength">The packets length</param>
+void rtp_filtering(uint8_t* rec_packet, int pack_length)
 {
-	if(packLength < 12)
+	int16_t pcm_buffer[20480];
+	int recvLen;
+	int pcm_buffer_len = 0;
+	int packet_count = 0;
+
+	if (pack_length < 12)
 	{
 		printf("Not big enough for VoIP packet.");
 		return;
 	}
 
-	uint8_t rtp_version = (recPacket[0] >> 6) & 0x03;
-	uint8_t rtp_type = recPacket[1] & 0x7F;
+	uint8_t rtp_version = (rec_packet[0] >> 6) & 0x03;
+	uint8_t rtp_type = rec_packet[1] & 0x7F;
 
-	if(rtp_version != 2)
+	if (rtp_version != 2)
 	{
 		printf("Invalid RTP version.%d", rtp_version);
 		return;
 	}
 
-	uint8_t* message = recPacket + 12;
-	int message_length = packLength - 12;
+	uint8_t* message = rec_packet + 12;
+	int message_length = pack_length - 12;
 
 	switch (rtp_type)
 	{
 	case 8:
-		for(int i = 0; i < message_length; i++)
+		for (int i = 0; i < message_length; i++)
 		{
 			int16_t decoded_sample = decode_A_law(message[i]);
+			pcm_buffer[pcm_buffer_len] = decoded_sample;
+			pcm_buffer_len++;
 		}
+		packet_count++;
 		break;
 	case 0:
 		break;
@@ -34,33 +48,44 @@ void rtp_filtering(uint8_t *recPacket, int packLength)
 		printf("Unrecognised RTP packet");
 	}
 
-	
+	save_wav_file(&pcm_buffer_len, pcm_buffer, &packet_count);
 }
 
-int16_t decode_A_law(int8_t recValue)
+/// <summary>
+/// Decodes G.711 A-law using the decoding algorithm
+/// </summary>
+/// <param name="recValue">The byte being checked</param>
+/// <returns>A 16 bit value containing audio information</returns>
+int16_t decode_A_law(uint8_t rec_value)
 {
-	uint8_t posOrNeg = 0x00;
+	uint8_t pos_or_neg = 0x00;
 	uint8_t exponent = 0;
-	uint16_t decodedValue = 0x00;
+	uint16_t decoded_value = 0x00;
+	rec_value;
+	rec_value ^= 0x55;
 
-	recValue ^= 0x55;
-
-	if(recValue & 0x80)
+	if(rec_value & 0x80)
 	{
-		recValue &= ~(1 << 7);
-		posOrNeg = -1;
+		rec_value &= ~(1 << 7);
+		pos_or_neg = -1;
 	}
 
-	exponent = ((recValue & 0xF0) >> 4) + 4;
+	decoded_value = ((rec_value & 0x0F) << 4);
+	exponent = ((rec_value & 0x70) >> 4);
 
-	if(exponent != 4)
+	switch(exponent)
 	{
-		decodedValue = ((1 << exponent) | ((recValue & 0x0F) << (exponent - 4)) | (1 << (exponent - 5)));
-	}
-	else
-	{
-		decodedValue = (recValue << 1) | 1;
+	case 0:
+		decoded_value += 8;
+		break;
+	case 1:
+		decoded_value += 0x108;
+		break;
+	default:
+		decoded_value += 0x108;
+		decoded_value <<= exponent - 1;
+		break;
 	}
 
-	return (posOrNeg == 0) ? (decodedValue) : (-decodedValue);
+	return (pos_or_neg == 0) ? (decoded_value) : (-decoded_value);
 }
