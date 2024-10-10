@@ -1,5 +1,13 @@
 #include "SortingAlgorithms.h"
 #include "AudioFileCreator.h"
+#include "JitterBuffer.h"
+
+#define BYTES_PCM 88200
+#define SAMPLE_RATE 44100
+#define CHANNELS 1
+#define BITS_PER_SAMPLE 16
+#define DURATION 5
+#define BUFFER_SIZE (SAMPLE_RATE * CHANNELS * (BITS_PER_SAMPLE / 8) * DURATION)
 
 /// <summary>
 /// Filters a packet based upon the rtp version
@@ -8,10 +16,14 @@
 /// <param name="packLength">The packets length</param>
 void rtp_filtering(uint8_t* rec_packet, int pack_length)
 {
-	int16_t pcm_buffer[20480];
-	int recvLen;
-	int pcm_buffer_len = 0;
-	int packet_count = 0;
+	static JitterBuffer jitter_buffer;
+	static int is_initialised = 0;
+
+	if (!is_initialised)
+	{
+		init_jitter_buffer(&jitter_buffer, BUFFER_SIZE / 2);
+		is_initialised = 1;
+	}
 
 	if (pack_length < 12)
 	{
@@ -31,24 +43,27 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 	uint8_t* message = rec_packet + 12;
 	int message_length = pack_length - 12;
 
-	switch (rtp_type)
+	if (rtp_type == 8)
 	{
-	case 8:
+		int16_t* pcm_data = (int16_t*)malloc(message_length * sizeof(int16_t));
+		if (pcm_data == NULL)
+		{
+			printf("Memory allocation failed.");
+			return;
+		}
 		for (int i = 0; i < message_length; i++)
 		{
-			int16_t decoded_sample = decode_A_law(message[i]);
-			pcm_buffer[pcm_buffer_len] = decoded_sample;
-			pcm_buffer_len++;
+			pcm_data[i] = decode_A_law(message[i]);
 		}
-		packet_count++;
-		break;
-	case 0:
-		break;
-	default:
+
+		add_to_jitter_buffer(&jitter_buffer, pcm_data, message_length);
+		process_jitter_buffer(&jitter_buffer);
+		free(pcm_data);
+	}
+	else if (rtp_type != 0)
+	{
 		printf("Unrecognised RTP packet");
 	}
-
-	save_wav_file(&pcm_buffer_len, pcm_buffer, &packet_count);
 }
 
 /// <summary>
@@ -58,34 +73,22 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 /// <returns>A 16 bit value containing audio information</returns>
 int16_t decode_A_law(uint8_t rec_value)
 {
-	uint8_t pos_or_neg = 0x00;
-	uint8_t exponent = 0;
-	uint16_t decoded_value = 0x00;
-	rec_value;
 	rec_value ^= 0x55;
+	uint8_t pos_or_neg = (rec_value & 0x80) ? -1 : 0;
+	rec_value &= 0x7F;
 
-	if(rec_value & 0x80)
+	uint16_t decoded_value = ((rec_value & 0x0F) << 4);
+	uint8_t exponent = (rec_value & 0x70) >> 4;
+
+	if (exponent > 1)
 	{
-		rec_value &= ~(1 << 7);
-		pos_or_neg = -1;
+		decoded_value += 0x108;
+		decoded_value <<= (exponent - 1);
+	}
+	else
+	{
+		decoded_value += (exponent == 0) ? 8 : 0x108;
 	}
 
-	decoded_value = ((rec_value & 0x0F) << 4);
-	exponent = ((rec_value & 0x70) >> 4);
-
-	switch(exponent)
-	{
-	case 0:
-		decoded_value += 8;
-		break;
-	case 1:
-		decoded_value += 0x108;
-		break;
-	default:
-		decoded_value += 0x108;
-		decoded_value <<= exponent - 1;
-		break;
-	}
-
-	return (pos_or_neg == 0) ? (decoded_value) : (-decoded_value);
+	return (pos_or_neg == 0) ? decoded_value : -decoded_value;
 }
