@@ -42,6 +42,37 @@ uint8_t linear_to_alaw(int16_t pcm_val)
 	return alaw_val ^ 0xD5;
 }
 
+uint8_t linear_to_ulaw(int16_t pcm_val)
+{
+	const int16_t BIAS = 0x84;
+	uint8_t sign = 0;
+	uint8_t exponent = 0;
+	uint8_t mantissa = 0;
+	uint8_t ulaw_val = 0;
+	int16_t mask = 0x4000;
+
+	if (pcm_val < 0)
+	{
+		pcm_val = -pcm_val;
+		sign = 0x80;
+	}
+
+	pcm_val += BIAS;
+
+	if (pcm_val > 32767)
+	{
+		pcm_val = 32767;
+	}
+
+	for (exponent = 7; (pcm_val & mask) == 0 && exponent > 0; exponent--, mask >>= 1);
+
+	mantissa = (pcm_val >> (exponent + 3)) & 0x0F;
+
+	ulaw_val = ~(sign | (exponent << 4) | mantissa);
+
+	return ulaw_val;
+}
+
 int main()
 {
 	const int sample_rate = 44100;

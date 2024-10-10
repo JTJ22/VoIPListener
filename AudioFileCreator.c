@@ -2,14 +2,12 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include "AudioFileCreator.h"
 
-#define CHAR_LENGTHS 4
-#define SAMPLE_RATE 44100
-#define CHANNELS 1
-#define BITS_PER_SAMPLE 16
-#define BYTES_IN_BUFFER 20480
-#define BYTES_PCM 88200
 
+/// <summary>
+/// Defines the structure of the header for a wav file
+/// </summary>
 struct wav_header
 {
 	char riff[CHAR_LENGTHS];
@@ -27,6 +25,12 @@ struct wav_header
 	int32_t data_length;
 };
 
+/// <summary>
+/// Creates a wave file with the given data size
+/// additioanally creates all header data for the file
+/// </summary>
+/// <param name="file">File being created</param>
+/// <param name="data_size">Size of the data being saved into this WAV</param>
 void create_wav_file(FILE* file, int data_size)
 {
 	struct wav_header header;
@@ -47,6 +51,11 @@ void create_wav_file(FILE* file, int data_size)
 	fwrite(&header, sizeof(header), 1, file);
 }
 
+/// <summary>
+/// Creates a wav file and saves the existing buffer data to the wav file
+/// </summary>
+/// <param name="pcm_buffer_len">Length of data being passed into the wav file</param>
+/// <param name="pcm_buffer">Data being passed into the wav file</param>
 void save_wav_file(int* pcm_buffer_len, int16_t* pcm_buffer)
 {
 	static int fileIndex = 0;

@@ -28,7 +28,7 @@ int wsa_startup()
 {
 	WSADATA wsaData;
 
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
 		printf("Cannot start up WSA. Error is: %d\n", WSAGetLastError());
 		return 1;
@@ -71,45 +71,52 @@ void bind_socket(SOCKET udpSocket, struct sockaddr_in* server)
 /// <returns>0 or 1 based on performance</returns>
 int start_listening()
 {
-	struct sockaddr_in server, client;
-	char buffer[512];
+  struct sockaddr_in server, client;
+  char buffer[512];
 
-	if (wsa_startup() == 1)
-	{
-		printf("WSA Startup has failed.");
-	}
+  if(wsa_startup() == 1)
+  {
+    printf("WSA Startup has failed.\n");
+    return 1;
+  }
 
-	SOCKET udpSocket = create_socket();
+  SOCKET udpSocket = create_socket();
 
-	if (udpSocket == INVALID_SOCKET)
-	{
-		return 1;
-	}
+  if (udpSocket == INVALID_SOCKET)
+  {
+    return 1;
+  }
 
-	socket_address_add(&server, 514);
+  socket_address_add(&server, 514);
 
-	bind_socket(udpSocket, &server);
+  if(bind(udpSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
+  {
+    printf("Cannot bind socket. Error is: %d\n", WSAGetLastError());
+    closesocket(udpSocket);
+    WSACleanup();
+    return 1;
+  }
 
-	int clientLen = sizeof(client);
-	int recvLen;
+  int clientLen = sizeof(client);
+  int recvLen;
 
-	while (1)
-	{
-		recvLen = recvfrom(udpSocket, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&client, &clientLen);
+  while(1)
+  {
+    recvLen = recvfrom(udpSocket, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&client, &clientLen);
 
-		if (recvLen == SOCKET_ERROR)
-		{
-			printf("Error getting data from socket. Error is: %d\n", WSAGetLastError());
-			break;
-		}
+    if (recvLen == SOCKET_ERROR)
+    {
+      printf("Error getting data from socket. Error is: %d\n", WSAGetLastError());
+      break;
+    }
 
-		rtp_filtering(buffer, recvLen);
-		buffer[recvLen] = '\0';
-	}
+    rtp_filtering((uint8_t*)buffer, recvLen);
+    buffer[recvLen] = '\0';
+  }
 
-	closesocket(udpSocket);
-	WSACleanup();
-	printf("Socket closed and cleaned up.\n");
+  closesocket(udpSocket);
+  WSACleanup();
+  printf("Socket closed and cleaned up.\n");
 
-	return 1;
+  return 1;
 }
