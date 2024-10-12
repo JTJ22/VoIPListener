@@ -24,6 +24,7 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 		return;
 	}
 
+	uint16_t sequence_number = (rec_packet[2] << 8) | rec_packet[3];
 	uint8_t rtp_version = (rec_packet[0] >> 6) & 0x03;
 	uint8_t rtp_type = rec_packet[1] & 0x7F;
 
@@ -36,7 +37,7 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 	uint8_t* message = rec_packet + 12;
 	int message_length = pack_length - 12;
 
-	if (rtp_type == 8 || rtp_type == 0)
+	if(rtp_type == 8 || rtp_type == 0)
 	{
 		int16_t* pcm_data = (int16_t*)malloc(message_length * sizeof(int16_t));
 		if (pcm_data == NULL)

@@ -69,10 +69,10 @@ void bind_socket(SOCKET udpSocket, struct sockaddr_in* server)
 /// Creates a looping buffer to recieve packets via UDP
 /// </summary>
 /// <returns>0 or 1 based on performance</returns>
-int start_listening()
+int start_listening(int* port_no)
 {
   struct sockaddr_in server, client;
-  char buffer[512];
+  uint8_t buffer[173];
 
   if(wsa_startup() == 1)
   {
@@ -87,7 +87,7 @@ int start_listening()
     return 1;
   }
 
-  socket_address_add(&server, 514);
+  socket_address_add(&server, port_no);
 
   if(bind(udpSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
   {

@@ -11,7 +11,7 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
-int start_listening();
+int start_listening(int* port_no);
 SOCKET create_socket();
 int wsa_startup();
 void socket_address_add(struct sockaddr_in* addr, int port);

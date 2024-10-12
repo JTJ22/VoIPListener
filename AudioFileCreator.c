@@ -71,7 +71,7 @@ void save_wav_file(int* pcm_buffer_len, int16_t* pcm_buffer)
 
 	create_wav_file(wav_file, *pcm_buffer_len * sizeof(int16_t));
 
-	if (fwrite(pcm_buffer, sizeof(int16_t), *pcm_buffer_len, wav_file) != *pcm_buffer_len)
+	if(fwrite(pcm_buffer, sizeof(int16_t), *pcm_buffer_len, wav_file) != *pcm_buffer_len)
 	{
 		perror("Failed to write audio data to WAV file");
 		fclose(wav_file);
