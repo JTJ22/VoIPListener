@@ -51,8 +51,15 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 			pcm_data[i] = (rtp_type == 8) ? decode_A_law(message[i]) : decode_U_law(message[i]);
 		}
 
-		add_to_jitter_buffer(&jitter_buffer, pcm_data, message_length);
-		process_jitter_buffer(&jitter_buffer);
+		if(jitter_buffer.length + message_length <= jitter_buffer.max_length)
+		{
+			add_to_jitter_buffer(&jitter_buffer, pcm_data, message_length);
+		}
+		else
+		{
+			process_jitter_buffer(&jitter_buffer);
+		}
+		
 		free(pcm_data);
 	}
 	else

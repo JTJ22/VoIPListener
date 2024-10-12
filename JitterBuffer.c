@@ -44,11 +44,9 @@ void add_to_jitter_buffer(JitterBuffer* jb, int16_t* data, int data_length)
 /// <param name="jb">The buffer being checked</param>
 void process_jitter_buffer(JitterBuffer* jb)
 {
-	if (jb->length >= jb->max_length)
-	{
-		save_wav_file(&jb->length, jb->buffer);
-		jb->length = 0;
-	}
+	save_wav_file(&jb->length, jb->buffer);
+	jb->length = 0;
+	memset(jb->buffer, 0, BYTES_PCM / 2);
 }
 
 /// <summary>

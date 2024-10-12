@@ -79,9 +79,4 @@ void save_wav_file(int* pcm_buffer_len, int16_t* pcm_buffer)
 	}
 
 	fclose(wav_file);
-
-	*pcm_buffer_len = 0;
-
-	memset(pcm_buffer, 0, BYTES_PCM * sizeof(int16_t));
-
 }
