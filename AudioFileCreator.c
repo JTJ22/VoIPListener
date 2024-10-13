@@ -63,7 +63,7 @@ void save_wav_file(int* pcm_buffer_len, int16_t* pcm_buffer)
 	snprintf(filename, sizeof(filename), "output_%d.wav", fileIndex++);
 
 	FILE* wav_file = fopen(filename, "wb");
-	if (!wav_file)
+	if(!wav_file)
 	{
 		perror("Failed to open WAV file");
 		return;

@@ -40,13 +40,13 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 	if(rtp_type == 8 || rtp_type == 0)
 	{
 		int16_t* pcm_data = (int16_t*)malloc(message_length * sizeof(int16_t));
-		if (pcm_data == NULL)
+		if(pcm_data == NULL)
 		{
 			printf("Memory allocation failed.");
 			return;
 		}
 
-		for (int i = 0; i < message_length; i++)
+		for(int i = 0; i < message_length; i++)
 		{
 			pcm_data[i] = (rtp_type == 8) ? decode_A_law(message[i]) : decode_U_law(message[i]);
 		}
@@ -59,7 +59,7 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 		{
 			process_jitter_buffer(&jitter_buffer);
 		}
-		
+
 		free(pcm_data);
 	}
 	else
@@ -82,7 +82,7 @@ int16_t decode_A_law(uint8_t rec_value)
 	uint16_t decoded_value = ((rec_value & 0x0F) << 4);
 	uint8_t exponent = (rec_value & 0x70) >> 4;
 
-	if (exponent > 1)
+	if(exponent > 1)
 	{
 		decoded_value += 0x108;
 		decoded_value <<= (exponent - 1);

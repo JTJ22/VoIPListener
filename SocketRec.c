@@ -9,7 +9,7 @@ SOCKET create_socket()
 {
 	SOCKET udpSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
-	if (udpSocket == INVALID_SOCKET)
+	if(udpSocket == INVALID_SOCKET)
 	{
 		printf("Error creating socket. Error is: %d\n", WSAGetLastError());
 		WSACleanup();
@@ -57,7 +57,7 @@ void socket_address_add(struct sockaddr_in* addr, int port)
 /// <param name="server">The information being used to bind the socket</param>
 void bind_socket(SOCKET udpSocket, struct sockaddr_in* server)
 {
-	if (bind(udpSocket, (struct sockaddr*)server, sizeof(*server)) == SOCKET_ERROR)
+	if(bind(udpSocket, (struct sockaddr*)server, sizeof(*server)) == SOCKET_ERROR)
 	{
 		printf("Cannot bind socket. Error is: %d\n", WSAGetLastError());
 		closesocket(udpSocket);
@@ -71,52 +71,52 @@ void bind_socket(SOCKET udpSocket, struct sockaddr_in* server)
 /// <returns>0 or 1 based on performance</returns>
 int start_listening(int* port_no)
 {
-  struct sockaddr_in server, client;
-  uint8_t buffer[173];
+	struct sockaddr_in server, client;
+	uint8_t buffer[173];
 
-  if(wsa_startup() == 1)
-  {
-    printf("WSA Startup has failed.\n");
-    return 1;
-  }
+	if(wsa_startup() == 1)
+	{
+		printf("WSA Startup has failed.\n");
+		return 1;
+	}
 
-  SOCKET udpSocket = create_socket();
+	SOCKET udpSocket = create_socket();
 
-  if (udpSocket == INVALID_SOCKET)
-  {
-    return 1;
-  }
+	if(udpSocket == INVALID_SOCKET)
+	{
+		return 1;
+	}
 
-  socket_address_add(&server, port_no);
+	socket_address_add(&server, port_no);
 
-  if(bind(udpSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
-  {
-    printf("Cannot bind socket. Error is: %d\n", WSAGetLastError());
-    closesocket(udpSocket);
-    WSACleanup();
-    return 1;
-  }
+	if(bind(udpSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
+	{
+		printf("Cannot bind socket. Error is: %d\n", WSAGetLastError());
+		closesocket(udpSocket);
+		WSACleanup();
+		return 1;
+	}
 
-  int clientLen = sizeof(client);
-  int recvLen;
+	int clientLen = sizeof(client);
+	int recvLen;
 
-  while(1)
-  {
-    recvLen = recvfrom(udpSocket, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&client, &clientLen);
+	while(1)
+	{
+		recvLen = recvfrom(udpSocket, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&client, &clientLen);
 
-    if (recvLen == SOCKET_ERROR)
-    {
-      printf("Error getting data from socket. Error is: %d\n", WSAGetLastError());
-      break;
-    }
+		if(recvLen == SOCKET_ERROR)
+		{
+			printf("Error getting data from socket. Error is: %d\n", WSAGetLastError());
+			break;
+		}
 
-    rtp_filtering((uint8_t*)buffer, recvLen);
-    buffer[recvLen] = '\0';
-  }
+		rtp_filtering((uint8_t*)buffer, recvLen);
+		buffer[recvLen] = '\0';
+	}
 
-  closesocket(udpSocket);
-  WSACleanup();
-  printf("Socket closed and cleaned up.\n");
+	closesocket(udpSocket);
+	WSACleanup();
+	printf("Socket closed and cleaned up.\n");
 
-  return 1;
+	return 1;
 }

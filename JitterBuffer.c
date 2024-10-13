@@ -12,7 +12,7 @@
 void init_jitter_buffer(JitterBuffer* jb, int max_length)
 {
 	jb->buffer = (int16_t*)malloc(max_length * sizeof(int16_t));
-	if (!jb->buffer)
+	if(!jb->buffer)
 	{
 		perror("Failed to allocate memory for jitter buffer");
 		exit(EXIT_FAILURE);
@@ -29,7 +29,7 @@ void init_jitter_buffer(JitterBuffer* jb, int max_length)
 /// <param name="data_length">The total length of the data being added to the buffer</param>
 void add_to_jitter_buffer(JitterBuffer* jb, int16_t* data, int data_length)
 {
-	if (jb->length + data_length > jb->max_length)
+	if(jb->length + data_length > jb->max_length)
 	{
 		printf("Jitter buffer overflow\n");
 		return;
