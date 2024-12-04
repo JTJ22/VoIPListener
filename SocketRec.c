@@ -11,7 +11,7 @@ SOCKET create_socket()
 
 	if(udpSocket == INVALID_SOCKET)
 	{
-		printf("Error creating socket. Error is: %d\n", WSAGetLastError());
+		printf("Cannot Create Socket: %d\n", WSAGetLastError());
 		WSACleanup();
 		return INVALID_SOCKET;
 	}
@@ -30,7 +30,7 @@ int wsa_startup()
 
 	if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
-		printf("Cannot start up WSA. Error is: %d\n", WSAGetLastError());
+		printf("Cannot start up WSA: %d\n", WSAGetLastError());
 		return 1;
 	}
 
@@ -59,7 +59,7 @@ void bind_socket(SOCKET udpSocket, struct sockaddr_in* server)
 {
 	if(bind(udpSocket, (struct sockaddr*)server, sizeof(*server)) == SOCKET_ERROR)
 	{
-		printf("Cannot bind socket. Error is: %d\n", WSAGetLastError());
+		printf("Cannot bind socket: %d\n", WSAGetLastError());
 		closesocket(udpSocket);
 		WSACleanup();
 	}
@@ -91,7 +91,7 @@ int start_listening(int* port_no)
 
 	if(bind(udpSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
-		printf("Cannot bind socket. Error is: %d\n", WSAGetLastError());
+		printf("Cannot bind socket: %d\n", WSAGetLastError());
 		closesocket(udpSocket);
 		WSACleanup();
 		return 1;
@@ -106,7 +106,7 @@ int start_listening(int* port_no)
 
 		if(recvLen == SOCKET_ERROR)
 		{
-			printf("Error getting data from socket. Error is: %d\n", WSAGetLastError());
+			printf("Error getting data from socket: %d\n", WSAGetLastError());
 			break;
 		}
 
@@ -116,7 +116,7 @@ int start_listening(int* port_no)
 
 	closesocket(udpSocket);
 	WSACleanup();
-	printf("Socket closed and cleaned up.\n");
+	printf("Socket closed.\n");
 
 	return 1;
 }

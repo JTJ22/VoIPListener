@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include "AudioFileCreator.h"
 
-
 /// <summary>
 /// Defines the structure of the header for a wav file
 /// </summary>
@@ -73,7 +72,7 @@ void save_wav_file(int* pcm_buffer_len, int16_t* pcm_buffer)
 
 	if(fwrite(pcm_buffer, sizeof(int16_t), *pcm_buffer_len, wav_file) != *pcm_buffer_len)
 	{
-		perror("Failed to write audio data to WAV file");
+		perror("Failed to write to WAV");
 		fclose(wav_file);
 		return;
 	}

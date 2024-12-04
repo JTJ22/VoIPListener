@@ -30,7 +30,7 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 
 	if(rtp_version != 2)
 	{
-		printf("Invalid RTP version.%d", rtp_version);
+		printf("Invalid RTP version. %d", rtp_version);
 		return;
 	}
 
@@ -42,7 +42,7 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 		int16_t* pcm_data = (int16_t*)malloc(message_length * sizeof(int16_t));
 		if(pcm_data == NULL)
 		{
-			printf("Memory allocation failed.");
+			printf("Malloc failed.");
 			return;
 		}
 
@@ -64,7 +64,7 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 	}
 	else
 	{
-		printf("Unrecognised RTP packet");
+		printf("Unrecognised RTP");
 	}
 }
 
