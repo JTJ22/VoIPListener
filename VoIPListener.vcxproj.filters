@@ -18,7 +18,7 @@
     <ClCompile Include="Source.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SortingAlgorithms.c">
+    <ClCompile Include="DecodeRtp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SocketRec.c">
@@ -27,12 +27,12 @@
     <ClCompile Include="AudioFileCreator.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="JitterBuffer.c">
+    <ClCompile Include="PcmBuffer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SortingAlgorithms.h">
+    <ClInclude Include="DecodeRtp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SocketRec.h">
@@ -41,7 +41,10 @@
     <ClInclude Include="AudioFileCreator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JitterBuffer.h">
+    <ClInclude Include="PcmBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalVariables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

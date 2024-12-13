@@ -7,7 +7,10 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdio.h>
-#include "SortingAlgorithms.h"
+#include <signal.h>
+#include <stdbool.h>
+#include "DecodeRtp.h"
+#include "PcmBuffer.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 

@@ -1,6 +1,6 @@
 #include "SocketRec.h"
-#include "SortingAlgorithms.h"
 
+static volatile bool keep_running = true;
 /// <summary>
 /// Creates a socket that will be used to receive VoIP data.
 /// </summary>
@@ -12,6 +12,15 @@ SOCKET create_socket()
 	if(udpSocket == INVALID_SOCKET)
 	{
 		printf("Cannot Create Socket: %d\n", WSAGetLastError());
+		WSACleanup();
+		return INVALID_SOCKET;
+	}
+
+	u_long mode = 1;
+	if(ioctlsocket(udpSocket, FIONBIO, &mode) != NO_ERROR)
+	{
+		printf("Cannot set socket to non-blocking: %d\n", WSAGetLastError());
+		closesocket(udpSocket);
 		WSACleanup();
 		return INVALID_SOCKET;
 	}
@@ -66,6 +75,16 @@ void bind_socket(SOCKET udpSocket, struct sockaddr_in* server)
 }
 
 /// <summary>
+/// When ctrl-c is pressed, the socket is closed
+/// </summary>
+/// <param name="conSig">Input for ctrl-c</param>
+void stop_socket(int conSig)
+{
+	printf("Closing socket.\n");
+	keep_running = false;
+}
+
+/// <summary>
 /// Creates a looping buffer to recieve packets via UDP
 /// </summary>
 /// <returns>0 or 1 based on performance</returns>
@@ -99,21 +118,35 @@ int start_listening(int* port_no)
 
 	int clientLen = sizeof(client);
 	int recvLen;
+	signal(SIGINT, stop_socket);
 
-	while(1)
+	static PcmBuffer pcm_buffer;
+	init_PCM_buffer(&pcm_buffer, BUFFER_SIZE / 2);
+
+	while(keep_running)
 	{
 		recvLen = recvfrom(udpSocket, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&client, &clientLen);
 
 		if(recvLen == SOCKET_ERROR)
 		{
-			printf("Error getting data from socket: %d\n", WSAGetLastError());
-			break;
+			int error = WSAGetLastError();
+
+			if(error == WSAEWOULDBLOCK)
+			{				
+				continue;
+			}
+			else
+			{
+				printf("Error getting data from socket: %d\n", WSAGetLastError());
+				break;
+			}
 		}
 
-		rtp_filtering((uint8_t*)buffer, recvLen);
+		rtp_filtering((uint8_t*)buffer, recvLen, &pcm_buffer);
 		buffer[recvLen] = '\0';
 	}
 
+	free_PCM_buffer(&pcm_buffer);
 	closesocket(udpSocket);
 	WSACleanup();
 	printf("Socket closed.\n");

@@ -1,22 +1,12 @@
-#include "SortingAlgorithms.h"
-#include "AudioFileCreator.h"
-#include "JitterBuffer.h"
+#include "DecodeRtp.h"
 
 /// <summary>
 /// Filters a packet based upon the rtp version
 /// </summary>
 /// <param name="recPacket">The packet being checked</param>
 /// <param name="packLength">The packets length</param>
-void rtp_filtering(uint8_t* rec_packet, int pack_length)
+void rtp_filtering(uint8_t* rec_packet, int pack_length, PcmBuffer* pcm_buffer)
 {
-	static JitterBuffer jitter_buffer;
-	static int is_initialised = 0;
-
-	if(!is_initialised)
-	{
-		init_jitter_buffer(&jitter_buffer, BUFFER_SIZE / 2);
-		is_initialised = 1;
-	}
 
 	if(pack_length < 12)
 	{
@@ -51,13 +41,13 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 			pcm_data[i] = (rtp_type == 8) ? decode_A_law(message[i]) : decode_U_law(message[i]);
 		}
 
-		if(jitter_buffer.length + message_length <= jitter_buffer.max_length)
+		if(pcm_buffer->length + message_length <= pcm_buffer->max_length)
 		{
-			add_to_jitter_buffer(&jitter_buffer, pcm_data, message_length);
+			add_to_PCM_buffer(pcm_buffer, pcm_data, message_length);
 		}
 		else
 		{
-			process_jitter_buffer(&jitter_buffer);
+			process_PCM_buffer(pcm_buffer);
 		}
 
 		free(pcm_data);
@@ -76,7 +66,7 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length)
 int16_t decode_A_law(uint8_t rec_value)
 {
 	rec_value ^= 0x55;
-	uint8_t pos_or_neg = (rec_value & 0x80) ? -1 : 0;
+	bool is_pos = (rec_value & 0x80) ? false : true;
 	rec_value &= 0x7F;
 
 	uint16_t decoded_value = ((rec_value & 0x0F) << 4);
@@ -92,7 +82,7 @@ int16_t decode_A_law(uint8_t rec_value)
 		decoded_value += (exponent == 0) ? 8 : 0x108;
 	}
 
-	return (pos_or_neg == 0) ? decoded_value : -decoded_value;
+	return (is_pos) ? decoded_value : -decoded_value;
 }
 
 /// <summary>
@@ -104,7 +94,7 @@ int16_t decode_U_law(uint8_t rec_value)
 {
 	rec_value = ~rec_value;
 
-	uint8_t pos_or_neg = rec_value & 0x80;
+	bool is_pos = (rec_value & 0x80) ? false : true;
 	rec_value &= 0x7F;
 
 	uint8_t exponent = (rec_value >> 4) & 0x07;
@@ -113,10 +103,5 @@ int16_t decode_U_law(uint8_t rec_value)
 	uint16_t decoded_value = (mantissa << 3) + 0x84;
 	decoded_value <<= exponent;
 
-	if(pos_or_neg)
-	{
-		decoded_value = -decoded_value;
-	}
-
-	return decoded_value;
+	return (is_pos) ? decoded_value : -decoded_value;
 }

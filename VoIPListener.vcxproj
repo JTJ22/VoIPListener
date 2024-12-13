@@ -128,16 +128,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioFileCreator.c" />
-    <ClCompile Include="JitterBuffer.c" />
+    <ClCompile Include="PcmBuffer.c" />
     <ClCompile Include="SocketRec.c" />
-    <ClCompile Include="SortingAlgorithms.c" />
+    <ClCompile Include="DecodeRtp.c" />
     <ClCompile Include="Source.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AudioFileCreator.h" />
-    <ClInclude Include="JitterBuffer.h" />
+    <ClInclude Include="GlobalVariables.h" />
+    <ClInclude Include="PcmBuffer.h" />
     <ClInclude Include="SocketRec.h" />
-    <ClInclude Include="SortingAlgorithms.h" />
+    <ClInclude Include="DecodeRtp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
