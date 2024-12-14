@@ -6,9 +6,11 @@
 #include <windows.h>
 #include "SocketRec.h"
 
-int main()
+#pragma comment(lib, "ws2_32.lib")
+
+__declspec(dllexport) int main(int port_no)
 {
-	run_program();
+	run_program(&port_no);
 	return 0;
 }
 
@@ -28,13 +30,9 @@ DWORD WINAPI listening_thread(LPVOID lpParam)
 /// Asks the user for a port number to listen on, then creates a thread to listen on that port
 /// </summary>
 /// <returns>0 once complete</returns>
-int run_program()
+int run_program(int* port_no)
 {
-	int port_no;
-	printf("Enter the port number to listen on: ");
-	scanf_s("%d", &port_no);
-
-	return create_thread(port_no);
+	return create_thread(*port_no);
 }
 
 /// <summary>
