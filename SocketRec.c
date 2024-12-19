@@ -1,6 +1,29 @@
 #include "SocketRec.h"
 
 static volatile bool keep_running = true;
+static CallbackFunction s_callback = NULL;
+
+/// <summary>
+/// 
+/// </summary>
+/// <param name="callback"></param>
+__declspec(dllexport) void event_register(CallbackFunction callback)
+{
+	s_callback = callback;
+}
+
+/// <summary>
+/// 
+/// </summary>
+/// <param name="message"></param>
+void trigger_data_rec(const char* message)
+{
+	if(s_callback != NULL)
+	{
+		s_callback(message);
+	}
+}
+
 /// <summary>
 /// Creates a socket that will be used to receive VoIP data.
 /// </summary>
@@ -144,6 +167,7 @@ int start_listening(int* port_no)
 
 		rtp_filtering((uint8_t*)buffer, recvLen, &pcm_buffer);
 		buffer[recvLen] = '\0';
+		trigger_data_rec((const char*)buffer);
 	}
 
 	free_PCM_buffer(&pcm_buffer);

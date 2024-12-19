@@ -14,9 +14,12 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
+typedef void (*CallbackFunction)(const char* message);
+__declspec(dllexport) void event_register(CallbackFunction callback);
+void trigger_data_rec(const char* message);
 int start_listening(int* port_no);
 SOCKET create_socket();
 int wsa_startup();
 void socket_address_add(struct sockaddr_in* addr, int port);
 
-#endif // SOCKET_REC_H_
+#endif // SOCKETREC_H_
