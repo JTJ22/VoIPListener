@@ -8,16 +8,18 @@
 /// </summary>
 /// <param name="pcb">Current buffer being initialised</param>
 /// <param name="max_length">The max length of the buffer</param>
-void init_PCM_buffer(PcmBuffer* pcb, int max_length)
+int init_PCM_buffer(PcmBuffer* pcb, int max_length)
 {
 	pcb->buffer = (int16_t*)malloc(max_length * sizeof(int16_t));
 	if(!pcb->buffer)
 	{
 		perror("Failed malloc for PCM Buffer");
 		exit(EXIT_FAILURE);
+		return 1;
 	}
 	pcb->length = 0;
 	pcb->max_length = max_length;
+	return 0;
 }
 
 /// <summary>

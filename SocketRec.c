@@ -74,26 +74,30 @@ int wsa_startup()
 /// </summary>
 /// <param name="addr">Data structure containing connection details</param>
 /// <param name="port">Port number to listen on</param>
-void socket_address_add(struct sockaddr_in* addr, int port)
+void socket_address_add(struct sockaddr_in* addr, int port, const char* ip_address)
 {
 	memset(addr, 0, sizeof(*addr));
 	addr->sin_family = AF_INET;
-	addr->sin_addr.s_addr = INADDR_ANY;
 	addr->sin_port = htons(port);
-}
 
-/// <summary>
-/// Binds the socket to previously set data
-/// </summary>
-/// <param name="udpSocket">The socket being set</param>
-/// <param name="server">The information being used to bind the socket</param>
-void bind_socket(SOCKET udpSocket, struct sockaddr_in* server)
-{
-	if(bind(udpSocket, (struct sockaddr*)server, sizeof(*server)) == SOCKET_ERROR)
+	if(ip_address == NULL || strcmp(ip_address, "0.0.0.0") == 0)
 	{
-		printf("Cannot bind socket: %d\n", WSAGetLastError());
-		closesocket(udpSocket);
-		WSACleanup();
+		addr->sin_addr.s_addr = INADDR_ANY;
+	}
+	else
+	{
+		int result = inet_pton(AF_INET, ip_address, &addr->sin_addr);
+		if(result != 1)
+		{
+			if(result == 0)
+			{
+				printf("Invalid IP address format: %s\n", ip_address);
+			}
+			else
+			{
+				printf("inet_pton failed: %d\n", WSAGetLastError());
+			}
+		}
 	}
 }
 
@@ -111,7 +115,7 @@ void stop_socket(int conSig)
 /// Creates a looping buffer to recieve packets via UDP
 /// </summary>
 /// <returns>0 or 1 based on performance</returns>
-int start_listening(int* port_no)
+int start_listening(const char* ip_address, int* port_no)
 {
 	struct sockaddr_in server, client;
 	uint8_t buffer[173];
@@ -129,7 +133,7 @@ int start_listening(int* port_no)
 		return 1;
 	}
 
-	socket_address_add(&server, port_no);
+	socket_address_add(&server, port_no, ip_address);
 
 	if(bind(udpSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
@@ -144,7 +148,13 @@ int start_listening(int* port_no)
 	signal(SIGINT, stop_socket);
 
 	static PcmBuffer pcm_buffer;
-	init_PCM_buffer(&pcm_buffer, BUFFER_SIZE / 2);
+	if(init_PCM_buffer(&pcm_buffer, BUFFER_SIZE / 2) != 0)
+	{
+		printf("Failed to initialise PCM buffer\n");
+		closesocket(udpSocket);
+		WSACleanup();
+		return 1;
+	}
 
 	while(keep_running)
 	{

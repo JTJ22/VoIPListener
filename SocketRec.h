@@ -17,9 +17,9 @@
 typedef void (*CallbackFunction)(const char* message);
 __declspec(dllexport) void event_register(CallbackFunction callback);
 void trigger_data_rec(const char* message);
-int start_listening(int* port_no);
+int start_listening(const char* ip_address, int* port_no);
 SOCKET create_socket();
 int wsa_startup();
-void socket_address_add(struct sockaddr_in* addr, int port);
+void socket_address_add(struct sockaddr_in* addr, int port, const char* ip_address);
 
 #endif // SOCKETREC_H_

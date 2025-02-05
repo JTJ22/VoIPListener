@@ -12,7 +12,7 @@ typedef struct
   int max_length;
 } PcmBuffer;
 
-void init_PCM_buffer(PcmBuffer* pcb, int max_length);
+int init_PCM_buffer(PcmBuffer* pcb, int max_length);
 void add_to_PCM_buffer(PcmBuffer* pcb, int16_t* data, int data_length);
 void process_PCM_buffer(PcmBuffer* pcb);
 void free_PCM_buffer(PcmBuffer* pcb);
