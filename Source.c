@@ -12,11 +12,13 @@ typedef struct
 {
 	int port_number;
 	const char* ip_address;
+	volatile bool keep_running;
+	HANDLE thread_handle;
 } socket_params;
 
-__declspec(dllexport) int main(const char* ip_address, int port_no)
+__declspec(dllexport) int main(socket_params* params)
 {
-	if(run_program(ip_address, port_no) != 0)
+	if(run_program(params) != 0)
 	{
 		printf("Program did not run!");
 	}
@@ -34,8 +36,7 @@ DWORD WINAPI listening_thread(LPVOID lpParam)
 	const char* ip_address = params->ip_address;
 	int port_no = params->port_number;
 
-	start_listening(ip_address, port_no);
-	free(params);
+	start_listening(ip_address, port_no, &params->keep_running);
 	return 0;
 }
 
@@ -43,17 +44,9 @@ DWORD WINAPI listening_thread(LPVOID lpParam)
 /// Asks the user for a port number to listen on, then creates a thread to listen on that port
 /// </summary>
 /// <returns>0 once complete</returns>
-int run_program(const char* ip_address, int port_no)
+int run_program(socket_params* params)
 {
-	socket_params* params = (socket_params*)malloc(sizeof(socket_params));
-	if(params == NULL)
-	{
-		printf("Memory allocation failed\n");
-		return 1;
-	}
-
-	params->ip_address = ip_address; 
-	params->port_number = port_no;
+	params->keep_running = true;
 	return create_thread(params);
 }
 
@@ -71,27 +64,37 @@ int create_thread(socket_params* params)
 		free(params);
 		return 1;
 	}
-
-	DWORD await = WaitForSingleObject(thread, INFINITE);
-	if(await == WAIT_FAILED)
-	{
-		printf("Thread failed to execute: %d\n", GetLastError());
-		CloseHandle(thread);
-		free(params);
-		return 1;
-	}
-
-	DWORD exit_code;
-	if(!GetExitCodeThread(thread, &exit_code))
-	{
-		printf("Cannot get exit code: %d\n", GetLastError());
-		CloseHandle(thread);
-		free(params);
-		return 1;
-
-	}
-
-	CloseHandle(thread);
-	free(params);
+	params->thread_handle = thread;
 	return 0;
+}
+
+
+__declspec(dllexport) void stop_listener(socket_params* params)
+{
+	if(params != NULL)
+	{
+		params->keep_running = false;
+		if(params->thread_handle != NULL)
+		{
+			DWORD waitResult = WaitForSingleObject(params->thread_handle, INFINITE);
+			if(waitResult == WAIT_OBJECT_0)
+			{
+				printf("Thread finished execution.\n");
+			}
+			else
+			{
+				printf("WaitForSingleObject failed: %d\n", GetLastError());
+			}
+			BOOL closeResult = CloseHandle(params->thread_handle);
+			if(!closeResult)
+			{
+				printf("CloseHandle failed: %d\n", GetLastError());
+			}
+			else
+			{
+				printf("Handle closed successfully.\n");
+			}
+			params->thread_handle = NULL;
+		}
+	}
 }

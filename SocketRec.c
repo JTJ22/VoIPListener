@@ -1,6 +1,5 @@
 #include "SocketRec.h"
 
-static volatile bool keep_running = true;
 static CallbackFunction s_callback = NULL;
 
 /// <summary>
@@ -108,14 +107,14 @@ void socket_address_add(struct sockaddr_in* addr, int port, const char* ip_addre
 void stop_socket(int conSig)
 {
 	printf("Closing socket.\n");
-	keep_running = false;
+	// keep_running = false;
 }
 
 /// <summary>
 /// Creates a looping buffer to recieve packets via UDP
 /// </summary>
 /// <returns>0 or 1 based on performance</returns>
-int start_listening(const char* ip_address, int* port_no)
+int start_listening(const char* ip_address, int* port_no, volatile bool* keep_running)
 {
 	struct sockaddr_in server, client;
 	uint8_t buffer[173];
@@ -147,7 +146,7 @@ int start_listening(const char* ip_address, int* port_no)
 	int recvLen;
 	signal(SIGINT, stop_socket);
 
-	static PcmBuffer pcm_buffer;
+	PcmBuffer pcm_buffer;
 	if(init_PCM_buffer(&pcm_buffer, BUFFER_SIZE / 2) != 0)
 	{
 		printf("Failed to initialise PCM buffer\n");
@@ -156,7 +155,7 @@ int start_listening(const char* ip_address, int* port_no)
 		return 1;
 	}
 
-	while(keep_running)
+	while(*keep_running)
 	{
 		recvLen = recvfrom(udpSocket, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&client, &clientLen);
 
