@@ -114,7 +114,7 @@ void stop_socket(int conSig)
 /// Creates a looping buffer to recieve packets via UDP
 /// </summary>
 /// <returns>0 or 1 based on performance</returns>
-int start_listening(const char* ip_address, int* port_no, volatile bool* keep_running)
+int start_listening(const char* ip_address, int* port_no, volatile bool* keep_running, const char* path)
 {
 	struct sockaddr_in server, client;
 	uint8_t buffer[173];
@@ -174,7 +174,7 @@ int start_listening(const char* ip_address, int* port_no, volatile bool* keep_ru
 			}
 		}
 
-		rtp_filtering((uint8_t*)buffer, recvLen, &pcm_buffer);
+		rtp_filtering((uint8_t*)buffer, recvLen, &pcm_buffer, path);
 		buffer[recvLen] = '\0';
 		trigger_data_rec((const char*)buffer);
 	}

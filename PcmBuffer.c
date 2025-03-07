@@ -43,9 +43,9 @@ void add_to_PCM_buffer(PcmBuffer* pcb, int16_t* data, int data_length)
 /// If the buffer has reached the max length, save the buffer to a wav file
 /// </summary>
 /// <param name="pcb">The buffer being checked</param>
-void process_PCM_buffer(PcmBuffer* pcb)
+void process_PCM_buffer(PcmBuffer* pcb, const char* path)
 {
-	save_wav_file(&pcb->length, pcb->buffer);
+	save_wav_file(path, &pcb->length, pcb->buffer);
 	pcb->length = 0;
 	memset(pcb->buffer, 0, BYTES_PCM / 2);
 }

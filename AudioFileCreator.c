@@ -55,13 +55,16 @@ void create_wav_file(FILE* file, int data_size)
 /// </summary>
 /// <param name="pcm_buffer_len">Length of data being passed into the wav file</param>
 /// <param name="pcm_buffer">Data being passed into the wav file</param>
-void save_wav_file(int* pcm_buffer_len, int16_t* pcm_buffer)
+void save_wav_file(const char* path, int* pcm_buffer_len, int16_t* pcm_buffer)
 {
 	static int fileIndex = 0;
 	char filename[50];
 	snprintf(filename, sizeof(filename), "output_%d.wav", fileIndex++);
 
-	FILE* wav_file = fopen(filename, "wb");
+	char filepath[256];
+	snprintf(filepath, sizeof(filepath), "%s/%s", path, filename);
+
+	FILE* wav_file = fopen(filepath, "wb");
 	if(!wav_file)
 	{
 		perror("Failed to open WAV file");

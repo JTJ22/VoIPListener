@@ -5,7 +5,7 @@
 /// </summary>
 /// <param name="recPacket">The packet being checked</param>
 /// <param name="packLength">The packets length</param>
-void rtp_filtering(uint8_t* rec_packet, int pack_length, PcmBuffer* pcm_buffer)
+void rtp_filtering(uint8_t* rec_packet, int pack_length, PcmBuffer* pcm_buffer, const char* path)
 {
 
 	if(pack_length < 12)
@@ -47,7 +47,7 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length, PcmBuffer* pcm_buffer)
 		}
 		else
 		{
-			process_PCM_buffer(pcm_buffer);
+			process_PCM_buffer(pcm_buffer, path);
 		}
 
 		free(pcm_data);

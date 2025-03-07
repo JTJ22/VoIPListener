@@ -13,7 +13,7 @@
 #define BYTES_PCM 88200
 
 int16_t decode_A_law(uint8_t rec_value);
-void rtp_filtering(uint8_t* rec_packet, int pack_length, PcmBuffer* pcm_buffer);
+void rtp_filtering(uint8_t* rec_packet, int pack_length, PcmBuffer* pcm_buffer, const char* path);
 int16_t decode_U_law(uint8_t rec_value);
 #endif // DECODE_RTP_H_
  

@@ -12,10 +12,16 @@ typedef struct
 {
 	int port_number;
 	const char* ip_address;
+	const char* path;
 	volatile bool keep_running;
 	HANDLE thread_handle;
 } socket_params;
 
+/// <summary>
+/// Access point into the DLL, starts the program
+/// </summary>
+/// <param name="params">The port number, ip address, allocated in C#</param>
+/// <returns> 0 once complete</returns>
 __declspec(dllexport) int main(socket_params* params)
 {
 	if(run_program(params) != 0)
@@ -35,8 +41,9 @@ DWORD WINAPI listening_thread(LPVOID lpParam)
 	socket_params* params = (socket_params*)lpParam;
 	const char* ip_address = params->ip_address;
 	int port_no = params->port_number;
+	const char* path = params->path;
 
-	start_listening(ip_address, port_no, &params->keep_running);
+	start_listening(ip_address, port_no, &params->keep_running, path);
 	return 0;
 }
 
