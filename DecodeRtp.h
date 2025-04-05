@@ -9,6 +9,7 @@
 #include "PcmBuffer.h"
 #include "AudioFileCreator.h"
 #include "GlobalVariables.h"
+#include "decoder.h"
 
 #define BYTES_PCM 88200
 

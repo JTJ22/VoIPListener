@@ -48,9 +48,38 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length, PcmBuffer* pcm_buffer, 
 		else
 		{
 			process_PCM_buffer(pcm_buffer, path);
+			add_to_PCM_buffer(pcm_buffer, pcm_data, message_length);
 		}
 
 		free(pcm_data);
+	}
+	else if(rtp_type == 18)
+	{
+		int16_t pcm_data[80];
+		bcg729DecoderChannelContextStruct* g729_decoder = initBcg729DecoderChannel();
+		int num_frames = message_length / 10;
+		if(message_length % 10 != 0)
+		{
+			printf("Invalid G.729 packet size");
+			return;
+		}
+
+		for(int i = 0; i < num_frames; i++)
+		{
+			bcg729Decoder(g729_decoder, message + i * 10, 10, 0, 0, 0, pcm_data);
+
+			if(pcm_buffer->length + 80 <= pcm_buffer->max_length)
+			{
+				add_to_PCM_buffer(pcm_buffer, pcm_data, 80);
+			}
+			else
+			{
+				process_PCM_buffer(pcm_buffer, path);
+				add_to_PCM_buffer(pcm_buffer, pcm_data, 80);
+			}
+		}
+
+		closeBcg729DecoderChannel(g729_decoder);
 	}
 	else
 	{

@@ -104,6 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)\libs\include\bcg729;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,7 +129,34 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioFileCreator.c" />
+    <ClCompile Include="libs\src\adaptativeCodebookSearch.c" />
+    <ClCompile Include="libs\src\cng.c" />
+    <ClCompile Include="libs\src\codebooks.c" />
+    <ClCompile Include="libs\src\computeAdaptativeCodebookGain.c" />
+    <ClCompile Include="libs\src\computeLP.c" />
+    <ClCompile Include="libs\src\computeWeightedSpeech.c" />
+    <ClCompile Include="libs\src\decodeAdaptativeCodeVector.c" />
+    <ClCompile Include="libs\src\decodeFixedCodeVector.c" />
+    <ClCompile Include="libs\src\decodeGains.c" />
+    <ClCompile Include="libs\src\decodeLSP.c" />
+    <ClCompile Include="libs\src\decoder.c" />
+    <ClCompile Include="libs\src\dtx.c" />
+    <ClCompile Include="libs\src\encoder.c" />
+    <ClCompile Include="libs\src\findOpenLoopPitchDelay.c" />
+    <ClCompile Include="libs\src\fixedCodebookSearch.c" />
+    <ClCompile Include="libs\src\gainQuantization.c" />
+    <ClCompile Include="libs\src\interpolateqLSP.c" />
+    <ClCompile Include="libs\src\LP2LSPConversion.c" />
+    <ClCompile Include="libs\src\LPSynthesisFilter.c" />
+    <ClCompile Include="libs\src\LSPQuantization.c" />
+    <ClCompile Include="libs\src\postFilter.c" />
+    <ClCompile Include="libs\src\postProcessing.c" />
+    <ClCompile Include="libs\src\preProcessing.c" />
+    <ClCompile Include="libs\src\qLSP2LP.c" />
+    <ClCompile Include="libs\src\utils.c" />
+    <ClCompile Include="libs\src\vad.c" />
     <ClCompile Include="PcmBuffer.c" />
+    <ClCompile Include="RTSPHandle.c" />
     <ClCompile Include="SocketRec.c" />
     <ClCompile Include="DecodeRtp.c" />
     <ClCompile Include="Source.c" />
@@ -136,9 +164,46 @@
   <ItemGroup>
     <ClInclude Include="AudioFileCreator.h" />
     <ClInclude Include="GlobalVariables.h" />
+    <ClInclude Include="libs\src\adaptativeCodebookSearch.h" />
+    <ClInclude Include="libs\src\basicOperationsMacros.h" />
+    <ClInclude Include="libs\src\cng.h" />
+    <ClInclude Include="libs\src\codebooks.h" />
+    <ClInclude Include="libs\src\codecParameters.h" />
+    <ClInclude Include="libs\src\computeAdaptativeCodebookGain.h" />
+    <ClInclude Include="libs\src\computeLP.h" />
+    <ClInclude Include="libs\src\computeWeightedSpeech.h" />
+    <ClInclude Include="libs\src\decodeAdaptativeCodeVector.h" />
+    <ClInclude Include="libs\src\decodeFixedCodeVector.h" />
+    <ClInclude Include="libs\src\decodeGains.h" />
+    <ClInclude Include="libs\src\decodeLSP.h" />
+    <ClInclude Include="libs\src\dtx.h" />
+    <ClInclude Include="libs\src\findOpenLoopPitchDelay.h" />
+    <ClInclude Include="libs\src\fixedCodebookSearch.h" />
+    <ClInclude Include="libs\src\fixedPointMacros.h" />
+    <ClInclude Include="libs\src\floatingPointMacros.h" />
+    <ClInclude Include="libs\src\g729FixedPointMath.h" />
+    <ClInclude Include="libs\src\gainQuantization.h" />
+    <ClInclude Include="libs\src\interpolateqLSP.h" />
+    <ClInclude Include="libs\src\LP2LSPConversion.h" />
+    <ClInclude Include="libs\src\LPSynthesisFilter.h" />
+    <ClInclude Include="libs\src\LSPQuantization.h" />
+    <ClInclude Include="libs\src\postFilter.h" />
+    <ClInclude Include="libs\src\postProcessing.h" />
+    <ClInclude Include="libs\src\preProcessing.h" />
+    <ClInclude Include="libs\src\qLSP2LP.h" />
+    <ClInclude Include="libs\src\typedef.h" />
+    <ClInclude Include="libs\src\utils.h" />
+    <ClInclude Include="libs\src\vad.h" />
     <ClInclude Include="PcmBuffer.h" />
+    <ClInclude Include="RTSPHandle.h" />
     <ClInclude Include="SocketRec.h" />
     <ClInclude Include="DecodeRtp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="libs\src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libs\src\Makefile.am" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

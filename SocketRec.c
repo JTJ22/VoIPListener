@@ -82,6 +82,7 @@ void socket_address_add(struct sockaddr_in* addr, int port, const char* ip_addre
 	if(ip_address == NULL || strcmp(ip_address, "0.0.0.0") == 0)
 	{
 		addr->sin_addr.s_addr = INADDR_ANY;
+		printf("Using IP ANY");
 	}
 	else
 	{
@@ -117,7 +118,7 @@ void stop_socket(int conSig)
 int start_listening(const char* ip_address, int* port_no, volatile bool* keep_running, const char* path)
 {
 	struct sockaddr_in server, client;
-	uint8_t buffer[173];
+	uint8_t buffer[1024];
 
 	if(wsa_startup() == 1)
 	{
@@ -133,6 +134,76 @@ int start_listening(const char* ip_address, int* port_no, volatile bool* keep_ru
 	}
 
 	socket_address_add(&server, port_no, ip_address);
+
+	if(bind(udpSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
+	{
+		printf("Cannot bind socket: %d\n", WSAGetLastError());
+		closesocket(udpSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	int clientLen = sizeof(client);
+	int recvLen;
+	signal(SIGINT, stop_socket);
+
+	while(*keep_running)
+	{
+		recvLen = recvfrom(udpSocket, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&client, &clientLen);
+
+		if(recvLen == SOCKET_ERROR)
+		{
+			int error = WSAGetLastError();
+
+			if(error == WSAEWOULDBLOCK)
+			{
+				continue;
+			}
+			else
+			{
+				printf("Error getting data from socket: %d\n", WSAGetLastError());
+				break;
+			}
+		}
+
+		process_rtsp_packet(buffer, recvLen, keep_running, udpSocket, &client, clientLen, path);
+		buffer[recvLen] = '\0';
+	}
+
+	closesocket(udpSocket);
+	WSACleanup();
+	printf("Socket closed.\n");
+
+	return 1;
+}
+
+/// <summary>
+/// Recieves media data rather than RTSP commands.
+/// </summary>
+/// <param name="ip_address">IP to listen on</param>
+/// <param name="port_no">Port to listen on</param>
+/// <param name="keep_running">Bool to control listener</param>
+/// <param name="path">Where to save audio data</param>
+/// <returns>1 if successful</returns>
+int start_listening_media(const char* ip_address, int* port_no, volatile bool* keep_running, const char* path)
+{
+	struct sockaddr_in server, client;
+	uint8_t buffer[173];
+
+	if(wsa_startup() == 1)
+	{
+		printf("WSA Startup has failed.\n");
+		return 1;
+	}
+
+	SOCKET udpSocket = create_socket();
+
+	if(udpSocket == INVALID_SOCKET)
+	{
+		return 1;
+	}
+
+	socket_address_add(&server, *port_no, ip_address);
 
 	if(bind(udpSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
@@ -164,7 +235,7 @@ int start_listening(const char* ip_address, int* port_no, volatile bool* keep_ru
 			int error = WSAGetLastError();
 
 			if(error == WSAEWOULDBLOCK)
-			{				
+			{
 				continue;
 			}
 			else
@@ -174,6 +245,7 @@ int start_listening(const char* ip_address, int* port_no, volatile bool* keep_ru
 			}
 		}
 
+		printf("Hello");
 		rtp_filtering((uint8_t*)buffer, recvLen, &pcm_buffer, path);
 		buffer[recvLen] = '\0';
 		trigger_data_rec((const char*)buffer);

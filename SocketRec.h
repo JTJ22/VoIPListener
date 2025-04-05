@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include "DecodeRtp.h"
 #include "PcmBuffer.h"
+#include "RTSPHandle.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -21,5 +22,6 @@ int start_listening(const char* ip_address, int* port_no, volatile bool* keep_ru
 SOCKET create_socket();
 int wsa_startup();
 void socket_address_add(struct sockaddr_in* addr, int port, const char* ip_address);
+int start_listening_media(const char* ip_address, int* port_no, volatile bool* keep_running, const char* path);
 
 #endif // SOCKETREC_H_

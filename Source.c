@@ -75,7 +75,10 @@ int create_thread(socket_params* params)
 	return 0;
 }
 
-
+/// <summary>
+/// Stops an active thread listener
+/// </summary>
+/// <param name="params">Parameter structure containing the thread information</param>
 __declspec(dllexport) void stop_listener(socket_params* params)
 {
 	if(params != NULL)

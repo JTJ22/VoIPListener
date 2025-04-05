@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="G729">
+      <UniqueIdentifier>{5a0fc779-3ee5-4491-9630-524a60ddbb62}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.c">
@@ -28,6 +31,87 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PcmBuffer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\adaptativeCodebookSearch.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\cng.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\codebooks.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\computeAdaptativeCodebookGain.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\computeLP.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\computeWeightedSpeech.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\decodeAdaptativeCodeVector.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\decodeFixedCodeVector.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\decodeGains.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\decodeLSP.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\decoder.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\dtx.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\encoder.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\findOpenLoopPitchDelay.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\fixedCodebookSearch.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\gainQuantization.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\interpolateqLSP.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\LP2LSPConversion.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\LPSynthesisFilter.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\LSPQuantization.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\postFilter.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\postProcessing.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\preProcessing.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\qLSP2LP.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\utils.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="libs\src\vad.c">
+      <Filter>G729</Filter>
+    </ClCompile>
+    <ClCompile Include="RTSPHandle.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,5 +131,108 @@
     <ClInclude Include="GlobalVariables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="libs\src\adaptativeCodebookSearch.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\basicOperationsMacros.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\cng.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\codebooks.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\codecParameters.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\computeAdaptativeCodebookGain.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\computeLP.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\computeWeightedSpeech.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\decodeAdaptativeCodeVector.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\decodeFixedCodeVector.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\decodeGains.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\decodeLSP.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\dtx.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\findOpenLoopPitchDelay.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\fixedCodebookSearch.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\fixedPointMacros.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\floatingPointMacros.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\g729FixedPointMath.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\gainQuantization.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\interpolateqLSP.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\LP2LSPConversion.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\LPSynthesisFilter.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\LSPQuantization.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\postFilter.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\postProcessing.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\preProcessing.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\qLSP2LP.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\typedef.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\utils.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="libs\src\vad.h">
+      <Filter>G729</Filter>
+    </ClInclude>
+    <ClInclude Include="RTSPHandle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="libs\src\CMakeLists.txt">
+      <Filter>G729</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libs\src\Makefile.am">
+      <Filter>G729</Filter>
+    </None>
   </ItemGroup>
 </Project>
