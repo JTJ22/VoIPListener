@@ -245,7 +245,6 @@ int start_listening_media(const char* ip_address, int* port_no, volatile bool* k
 			}
 		}
 
-		printf("Hello");
 		rtp_filtering((uint8_t*)buffer, recvLen, &pcm_buffer, path);
 		buffer[recvLen] = '\0';
 		trigger_data_rec((const char*)buffer);

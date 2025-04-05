@@ -31,6 +31,8 @@ typedef struct
 	int cseq;
   char session[32];
   int content_length;
+	char version[32];
+	char ip_address[32];
 } rtsp_data;
 
 typedef struct
@@ -46,8 +48,10 @@ void process_announce(char* message_buffer, rtsp_data* rtsp, int packet_length, 
 void process_sdp_data(const char* sdp_info, sdp_data* sdp);
 void process_setup(char* message_buffer, rtsp_data* rtsp, int packet_length, SOCKET udpSocket, struct sockaddr_in* client, int clientLen, const char* path, volatile bool* keep_run);
 void send_announce_reply(sdp_data* sdp, rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* client, int clientLen);
+void send_generic_reply(rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* client, int clientLen);
 void send_setup_reply(rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* client, int clientLen, const char* path, volatile bool* keep_run);
+void process_generic(char* message_buffer, rtsp_data* rtsp, int packet_length, SOCKET udpSocket, struct sockaddr_in* client, int clientLen);
 int send_reply(SOCKET udpSocket, char* response, struct sockaddr_in* client, int clientLen);
-int create_media_thread(const char* path, volatile bool* keep_run);
+int create_media_thread(const char* path, volatile bool* keep_run, char* ip_address);
 DWORD WINAPI start_listening_thread(LPVOID lpParam);
 #endif // RTSPHANDLE_H_

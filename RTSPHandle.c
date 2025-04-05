@@ -36,6 +36,31 @@ void process_rtsp_packet(uint8_t * buffer, int packet_length, volatile bool* is_
 	{
 		process_setup(&message_buffer, &rtsp, packet_length, udpSocket, client, clientLen, path, is_complete);
 	}
+	else if(strcmp(rtsp.method, "RECORD") == 0)
+	{
+		process_generic(&message_buffer, &rtsp, packet_length, udpSocket, client, clientLen);
+	}
+	else if(strcmp(rtsp.method, "PAUSE") == 0)
+	{
+		process_generic(&message_buffer, &rtsp, packet_length, udpSocket, client, clientLen);
+	}
+	else if(strcmp(rtsp.method, "TEARDOWN") == 0)
+	{
+		process_generic(&message_buffer, &rtsp, packet_length, udpSocket, client, clientLen);
+	}
+	else if(strcmp(rtsp.method, "GET_PARAMETER") == 0)
+	{
+		process_generic(&message_buffer, &rtsp, packet_length, udpSocket, client, clientLen);
+	}
+	else if(strcmp(rtsp.method, "SET_PARAMETER") == 0)
+	{
+		process_generic(&message_buffer, &rtsp, packet_length, udpSocket, client, clientLen);
+	}
+	else
+	{
+		printf("Unknown RTSP method: %s\n", rtsp.method);
+	}
+
 }
 
 /// <summary>
@@ -59,6 +84,12 @@ void process_announce(char* message_buffer, rtsp_data* rtsp, int packet_length, 
 	if(session_str)
 	{
 		sscanf_s(session_str, "Session: %31s", rtsp->session, (unsigned)_countof(rtsp->session));
+	}
+
+	char* ver_str = strstr(message_buffer, "WG67-Version:");
+	if(ver_str)
+	{
+		sscanf_s(ver_str, "WG67-Version: %31s", rtsp->version, (unsigned)_countof(rtsp->version));
 	}
 
 	char* content_str = strstr(message_buffer, "Content-Length:");
@@ -90,10 +121,23 @@ void process_setup(char* message_buffer, rtsp_data* rtsp, int packet_length, SOC
 		sscanf_s(cseq_str, "CSeq: %d", &rtsp->cseq);
 	}
 
+	char* ver_str = strstr(message_buffer, "WG67-Version:");
+	if(ver_str)
+	{
+		sscanf_s(ver_str, "WG67-Version: %31s", rtsp->version, (unsigned)_countof(rtsp->version));
+	}
+
 	char* session_str = strstr(message_buffer, "Session:");
 	if(session_str)
 	{
 		sscanf_s(session_str, "Session: %31s", rtsp->session, (unsigned)_countof(rtsp->session));
+	}
+
+	char* rtsp_url = strstr(message_buffer, "rtsp://");
+	if(rtsp_url)
+	{
+		rtsp_url += 7;
+		sscanf_s(rtsp_url, "%15[^:]", rtsp->ip_address, (unsigned)_countof(rtsp->ip_address));
 	}
 
 	send_setup_reply(rtsp, udpSocket, client, clientLen, path, keep_run);
@@ -144,7 +188,7 @@ void send_announce_reply(sdp_data* sdp, rtsp_data* rtsp, SOCKET udpSocket, struc
 
 	snprintf(response, sizeof(response),
 		"RTSP/1.0 200 OK\r\n"
-		"WG67-Version: recorder.02\r\n"
+		"WG67-Version: %s\r\n"
 		"CSeq: %d\r\n"
 		"Session: %s\r\n"
 		"Content-Type: application/sdp\r\n"
@@ -157,6 +201,7 @@ void send_announce_reply(sdp_data* sdp, rtsp_data* rtsp, SOCKET udpSocket, struc
 		"t=0 0\r\n"
 		"m=%s %d RTP/AVP 8\r\n"
 		"a=rtpmap:8 %s\r\n",
+		rtsp->version,
 		rtsp->cseq,
 		rtsp->session[0] ? rtsp->session : "NEW_SESSION",
 		content_length,
@@ -173,21 +218,61 @@ void send_announce_reply(sdp_data* sdp, rtsp_data* rtsp, SOCKET udpSocket, struc
 void send_setup_reply(rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* client, int clientLen, const char* path, volatile bool* keep_run)
 {
 	char response[512];
-	char my_ip[32] = "192.168.1.1"; 
 
 	snprintf(response, sizeof(response),
 		"RTSP/1.0 200 OK\r\n"
-		"WG67-Version: recorder.02\r\n"
+		"WG67-Version: %s\r\n"
 		"CSeq: %d\r\n"
 		"Transport: RTP/AVP/UDP;src_addr=\"%s:6000\";setup=passive\r\n"
 		"Session: %s;timeout=60\r\n"
 		"\r\n",
+		rtsp->version,
 		rtsp->cseq,
-		my_ip,
+		rtsp->ip_address,
 		rtsp->session);
 
 	send_reply(udpSocket, response, client, clientLen);
-	create_media_thread(path, keep_run);
+	create_media_thread(path, keep_run, rtsp->ip_address);
+}
+
+void process_generic(char* message_buffer, rtsp_data* rtsp, int packet_length, SOCKET udpSocket, struct sockaddr_in* client, int clientLen)
+{
+	char* cseq_str = strstr(message_buffer, "CSeq:");
+	if(cseq_str)
+	{
+		sscanf_s(cseq_str, "CSeq: %d", &rtsp->cseq);
+	}
+
+	char* ver_str = strstr(message_buffer, "WG67-Version:");
+	if(ver_str)
+	{
+		sscanf_s(ver_str, "WG67-Version: %31s", rtsp->version, (unsigned)_countof(rtsp->version));
+	}
+
+	char* session_str = strstr(message_buffer, "Session:");
+	if(session_str)
+	{
+		sscanf_s(session_str, "Session: %31s", rtsp->session, (unsigned)_countof(rtsp->session));
+	}
+
+	send_generic_reply(rtsp, udpSocket, client, clientLen);
+}
+
+void send_generic_reply(rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* client, int clientLen)
+{
+	char response[512];
+
+	snprintf(response, sizeof(response),
+		"RTSP/1.0 200 OK\r\n"
+		"WG67-Version: %s\r\n"
+		"CSeq: %d\r\n"
+		"Session: %s\r\n"
+		"\r\n",
+		rtsp->version,
+		rtsp->cseq,
+		rtsp->session);
+
+	send_reply(udpSocket, response, client, clientLen);
 }
 
 int send_reply(SOCKET udpSocket, char* response, struct sockaddr_in* client, int clientLen)
@@ -205,7 +290,7 @@ int send_reply(SOCKET udpSocket, char* response, struct sockaddr_in* client, int
 	}
 }
 
-int create_media_thread(const char* path, volatile bool* keep_run)
+int create_media_thread(const char* path, volatile bool* keep_run, char* ip_address)
 {
 	socket_param* sock_pa = (socket_param*)malloc(sizeof(socket_param));
 
@@ -215,7 +300,7 @@ int create_media_thread(const char* path, volatile bool* keep_run)
 		return 1;
 	}
 
-	sock_pa->ip_address = "127.0.0.1";
+	sock_pa->ip_address = ip_address;
 	sock_pa->path = path;
 	sock_pa->port_number = 6000;
 	sock_pa->keep_running = keep_run;
