@@ -40,7 +40,7 @@ typedef struct
 	int port_number;
 	const char* ip_address;
 	const char* path;
-	volatile bool keep_running;
+	volatile bool* keep_running;
 } socket_param;
 
 void process_rtsp_packet(uint8_t* buffer, int packet_length, volatile bool* is_complete, SOCKET udpSocket, struct sockaddr_in* client, int clientLen, const char* path);

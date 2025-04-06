@@ -66,11 +66,11 @@ void process_rtsp_packet(uint8_t * buffer, int packet_length, volatile bool* is_
 /// <summary>
 /// Processes an announce packet
 /// </summary>
-/// <param name="message_buffer"></param>
-/// <param name="rtsp"></param>
-/// <param name="packet_length"></param>
-/// <param name="udpSocket"></param>
-/// <param name="client"></param>
+/// <param name="message_buffer">Contains packet data</param>
+/// <param name="rtsp">Struct to contain data</param>
+/// <param name="packet_length">Lenght of packet</param>
+/// <param name="udpSocket">Socket to send data through</param>
+/// <param name="client">Client information</param>
 /// <param name="clientLen"></param>
 void process_announce(char* message_buffer, rtsp_data* rtsp, int packet_length, SOCKET udpSocket, struct sockaddr_in* client, int clientLen)
 {
@@ -314,6 +314,8 @@ int create_media_thread(const char* path, volatile bool* keep_run, char* ip_addr
 		return 1;
 	}
 
+	WaitForSingleObject(listenerThread, INFINITE);
+	free(sock_pa);
 	CloseHandle(listenerThread);
 
 	return 0;
@@ -323,7 +325,6 @@ DWORD WINAPI start_listening_thread(LPVOID lpParam)
 {
 	socket_param* args = (socket_param*)lpParam;
 
-	int result = start_listening_media(args->ip_address, &args->port_number, &args->keep_running, args->path);
-	free(args);
+	int result = start_listening_media(args->ip_address, &args->port_number, args->keep_running, args->path);
 	return result;
 }
