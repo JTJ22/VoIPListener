@@ -8,7 +8,7 @@
 /// <param name="is_complete">Checks if thread should remain open</param>
 /// <param name="udpSocket">Socket currently handling RTSP packets</param>
 /// <param name="client">Client data to handle communications</param>
-/// <param name="clientLen"></param>
+/// <param name="clientLen">Defines how long data about the client is</param>
 /// <param name="path">Path to save audio data</param>
 void process_rtsp_packet(uint8_t * buffer, int packet_length, volatile bool* is_complete, SOCKET udpSocket, struct sockaddr_in* client, int clientLen, const char* path)
 {
@@ -71,7 +71,7 @@ void process_rtsp_packet(uint8_t * buffer, int packet_length, volatile bool* is_
 /// <param name="packet_length">Lenght of packet</param>
 /// <param name="udpSocket">Socket to send data through</param>
 /// <param name="client">Client information</param>
-/// <param name="clientLen"></param>
+/// <param name="clientLen">Defines how long data about the client is</param>
 void process_announce(char* message_buffer, rtsp_data* rtsp, int packet_length, SOCKET udpSocket, struct sockaddr_in* client, int clientLen)
 {
 	char* cseq_str = strstr(message_buffer, "CSeq:");
@@ -111,6 +111,17 @@ void process_announce(char* message_buffer, rtsp_data* rtsp, int packet_length, 
 	}
 }
 
+/// <summary>
+/// Processes a SETUP packet received via RTSP
+/// </summary>
+/// <param name="message_buffer">The packet that has been received</param>
+/// <param name="rtsp">Struct containing rtsp information</param>
+/// <param name="packet_length">Size of the packet</param>
+/// <param name="udpSocket">Socket to return messages</param>
+/// <param name="client">Client information</param>
+/// <param name="clientLen">The length of the clients information</param>
+/// <param name="path">Path to save audio data to</param>
+/// <param name="keep_run">Boolean to keep socket running</param>
 void process_setup(char* message_buffer, rtsp_data* rtsp, int packet_length, SOCKET udpSocket, struct sockaddr_in* client, int clientLen, const char* path, volatile bool* keep_run)
 {
 	memset(rtsp, 0, sizeof(rtsp_data));
@@ -143,6 +154,11 @@ void process_setup(char* message_buffer, rtsp_data* rtsp, int packet_length, SOC
 	send_setup_reply(rtsp, udpSocket, client, clientLen, path, keep_run);
 }
 
+/// <summary>
+/// Processes the SDP data from the announce packet
+/// </summary>
+/// <param name="sdp_info">String containing the data</param>
+/// <param name="sdp">Struct to store decoded data</param>
 void process_sdp_data(const char* sdp_info, sdp_data* sdp)
 {
 	memset(sdp, 0, sizeof(sdp));
@@ -180,6 +196,14 @@ void process_sdp_data(const char* sdp_info, sdp_data* sdp)
 	}
 }
 
+/// <summary>
+/// Builds a response to the ANNOUNCE command
+/// </summary>
+/// <param name="sdp">SDP data to respond with</param>
+/// <param name="rtsp">Struct containing RTSP data</param>
+/// <param name="udpSocket">Socket to respond on</param>
+/// <param name="client">Client data to respond on</param>
+/// <param name="clientLen">Length of client data</param>
 void send_announce_reply(sdp_data* sdp, rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* client, int clientLen)
 {
 	char response[512];
@@ -215,6 +239,15 @@ void send_announce_reply(sdp_data* sdp, rtsp_data* rtsp, SOCKET udpSocket, struc
 	send_reply(udpSocket, response, client, clientLen);
 }
 
+/// <summary>
+/// Builds a response to a SETUP command
+/// </summary>
+/// <param name="rtsp">Struct containing RTSP data</param>
+/// <param name="udpSocket">Socket to respond on</param>
+/// <param name="client">Client data to respond to</param>
+/// <param name="clientLen">Length of client data</param>
+/// <param name="path">Path to store audio data</param>
+/// <param name="keep_run">Boolean to control socket use</param>
 void send_setup_reply(rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* client, int clientLen, const char* path, volatile bool* keep_run)
 {
 	char response[512];
@@ -235,6 +268,15 @@ void send_setup_reply(rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* cli
 	create_media_thread(path, keep_run, rtsp->ip_address);
 }
 
+/// <summary>
+/// Processes generic RTSP commands that require a 200 ok response
+/// </summary>
+/// <param name="message_buffer">Message received by the socket</param>
+/// <param name="rtsp">Struct containing RTSP data</param>
+/// <param name="packet_length">Size of the packet</param>
+/// <param name="udpSocket">Socket to respond on</param>
+/// <param name="client">Client data</param>
+/// <param name="clientLen">Client data length</param>
 void process_generic(char* message_buffer, rtsp_data* rtsp, int packet_length, SOCKET udpSocket, struct sockaddr_in* client, int clientLen)
 {
 	char* cseq_str = strstr(message_buffer, "CSeq:");
@@ -258,6 +300,13 @@ void process_generic(char* message_buffer, rtsp_data* rtsp, int packet_length, S
 	send_generic_reply(rtsp, udpSocket, client, clientLen);
 }
 
+/// <summary>
+/// Constructs a generic RTSP response to commands such as PAUSE, TEARDOWN, and GET_PARAMETER
+/// </summary>
+/// <param name="rtsp">Struct containing RTSP data</param>
+/// <param name="udpSocket">Socket to respond on</param>
+/// <param name="client">Client information to respond to</param>
+/// <param name="clientLen">Size of client data</param>
 void send_generic_reply(rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* client, int clientLen)
 {
 	char response[512];
@@ -275,6 +324,14 @@ void send_generic_reply(rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* c
 	send_reply(udpSocket, response, client, clientLen);
 }
 
+/// <summary>
+/// Sends a constructed response back to the client
+/// </summary>
+/// <param name="udpSocket">Socket to respond on</param>
+/// <param name="response">Data to send back to the client</param>
+/// <param name="client">Client data needs to be sent to</param>
+/// <param name="clientLen">Size of client data</param>
+/// <returns>0 if succeeds</returns>
 int send_reply(SOCKET udpSocket, char* response, struct sockaddr_in* client, int clientLen)
 {
 	int sentBytes = sendto(udpSocket, response, strlen(response), 0, (struct sockaddr*)client, clientLen);
@@ -290,6 +347,13 @@ int send_reply(SOCKET udpSocket, char* response, struct sockaddr_in* client, int
 	}
 }
 
+/// <summary>
+/// Creates a thread to listen for media
+/// </summary>
+/// <param name="path">Path to save audio data to</param>
+/// <param name="keep_run">Bool to control running of data</param>
+/// <param name="ip_address">Ip address to listen on</param>
+/// <returns>0 if successful</returns>
 int create_media_thread(const char* path, volatile bool* keep_run, char* ip_address)
 {
 	socket_param* sock_pa = (socket_param*)malloc(sizeof(socket_param));
@@ -321,6 +385,11 @@ int create_media_thread(const char* path, volatile bool* keep_run, char* ip_addr
 	return 0;
 }
 
+/// <summary>
+/// Starts a thread to listen for media data.
+/// </summary>
+/// <param name="lpParam">Parameters to be passed to listener</param>
+/// <returns>Result of listener</returns>
 DWORD WINAPI start_listening_thread(LPVOID lpParam)
 {
 	socket_param* args = (socket_param*)lpParam;
