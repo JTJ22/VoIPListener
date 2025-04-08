@@ -378,9 +378,45 @@ int create_media_thread(const char* path, volatile bool* keep_run, char* ip_addr
 		return 1;
 	}
 
-	WaitForSingleObject(listenerThread, INFINITE);
-	free(sock_pa);
-	CloseHandle(listenerThread);
+	wait_param* wp = (wait_param*)malloc(sizeof(wait_param));
+	if(wp == NULL)
+	{
+		printf("Failed to allocate waiter param.\n");
+		CloseHandle(listenerThread);
+		free(sock_pa);
+		return 1;
+	}
+
+	wp->thread_handle = listenerThread;
+	wp->sock_pa = sock_pa;
+
+	HANDLE waiterThread = CreateThread(NULL, 0, wait_for_listener_thread, wp, 0, NULL);
+	if(waiterThread == NULL)
+	{
+		printf("Failed to create waiter thread.\n");
+		CloseHandle(listenerThread);
+		free(sock_pa);
+		free(wp);
+		return 1;
+	}
+
+	CloseHandle(waiterThread);
+	return 0;
+}
+
+/// <summary>
+/// Waits for the media thread, prevents RTSP thread from blocking
+/// </summary>
+/// <param name="lpParam">Parameters</param>
+/// <returns>0 if successful</returns>
+DWORD WINAPI wait_for_listener_thread(LPVOID lpParam)
+{
+	wait_param* wp = (wait_param*)lpParam;
+	WaitForSingleObject(wp->thread_handle, INFINITE);
+
+	CloseHandle(wp->thread_handle);
+	free(wp->sock_pa);
+	free(wp);
 
 	return 0;
 }
