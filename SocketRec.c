@@ -118,7 +118,7 @@ void stop_socket(int conSig)
 int start_listening(const char* ip_address, int* port_no, volatile bool* keep_running, const char* path)
 {
 	struct sockaddr_in server, client;
-	uint8_t buffer[1024];
+	uint8_t buffer[1500];
 
 	if(wsa_startup() == 1)
 	{

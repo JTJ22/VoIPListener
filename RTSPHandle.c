@@ -12,7 +12,7 @@
 /// <param name="path">Path to save audio data</param>
 void process_rtsp_packet(uint8_t * buffer, int packet_length, volatile bool* is_complete, SOCKET udpSocket, struct sockaddr_in* client, int clientLen, const char* path)
 {
-	char message_buffer[1024];
+	char message_buffer[1500];
 
 	if(packet_length >= sizeof(message_buffer))
 	{
@@ -56,6 +56,10 @@ void process_rtsp_packet(uint8_t * buffer, int packet_length, volatile bool* is_
 	{
 		process_generic(&message_buffer, &rtsp, packet_length, udpSocket, client, clientLen);
 	}
+	else if(strcmp(rtsp.method, "OPTIONS") == 0)
+	{
+		process_generic(&message_buffer, &rtsp, packet_length, udpSocket, client, clientLen);
+	}
 	else
 	{
 		printf("Unknown RTSP method: %s\n", rtsp.method);
@@ -96,6 +100,13 @@ void process_announce(char* message_buffer, rtsp_data* rtsp, int packet_length, 
 	if(content_str)
 	{
 		sscanf_s(content_str, "Content-Length: %d", &rtsp->content_length);
+	}
+
+	char* rtsp_url = strstr(message_buffer, "rtsp://");
+	if(rtsp_url)
+	{
+		rtsp_url += 7;
+		sscanf_s(rtsp_url, "%15[^:]", rtsp->ip_address, (unsigned)_countof(rtsp->ip_address));
 	}
 
 	char* sdp_start = strstr(message_buffer, "\r\n\r\n");
@@ -207,7 +218,6 @@ void process_sdp_data(const char* sdp_info, sdp_data* sdp)
 void send_announce_reply(sdp_data* sdp, rtsp_data* rtsp, SOCKET udpSocket, struct sockaddr_in* client, int clientLen)
 {
 	char response[512];
-	char my_ip[32] = "192.168.1.1";
 	unsigned long content_length = (unsigned long)strlen(sdp->session_name) + 89;
 
 	snprintf(response, sizeof(response),
@@ -231,7 +241,7 @@ void send_announce_reply(sdp_data* sdp, rtsp_data* rtsp, SOCKET udpSocket, struc
 		content_length,
 		sdp->origin_ip,
 		sdp->session_name,
-		my_ip,
+		rtsp->ip_address,
 		sdp->media_type,
 		sdp->port,
 		sdp->codec);
@@ -429,7 +439,7 @@ DWORD WINAPI wait_for_listener_thread(LPVOID lpParam)
 DWORD WINAPI start_listening_thread(LPVOID lpParam)
 {
 	socket_param* args = (socket_param*)lpParam;
-
 	int result = start_listening_media(args->ip_address, &args->port_number, args->keep_running, args->path);
+
 	return result;
 }
