@@ -23,5 +23,6 @@ SOCKET create_socket();
 int wsa_startup();
 void socket_address_add(struct sockaddr_in* addr, int port, const char* ip_address);
 int start_listening_media(const char* ip_address, int* port_no, volatile bool* keep_running, const char* path);
+DWORD WINAPI MonitorUsage(LPVOID param);
 
 #endif // SOCKETREC_H_

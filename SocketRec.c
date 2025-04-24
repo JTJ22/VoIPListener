@@ -1,4 +1,6 @@
 #include "SocketRec.h"
+#include <psapi.h>
+
 
 static CallbackFunction s_callback = NULL;
 
@@ -187,6 +189,18 @@ int start_listening(const char* ip_address, int* port_no, volatile bool* keep_ru
 /// <returns>1 if successful</returns>
 int start_listening_media(const char* ip_address, int* port_no, volatile bool* keep_running, const char* path)
 {
+	LARGE_INTEGER freq;
+	QueryPerformanceFrequency(&freq);
+
+	double total_latency = 0.0;
+	int packet_count = 0;
+
+	FILE* csv = fopen("latency_log.csv", "w");
+	if(csv)
+	{
+		fprintf(csv, "PacketIndex,LatencyMs\n");
+	}
+
 	struct sockaddr_in server, client;
 	uint8_t buffer[173];
 
@@ -226,6 +240,13 @@ int start_listening_media(const char* ip_address, int* port_no, volatile bool* k
 		return 1;
 	}
 
+	volatile bool monitor_running = true;
+	HANDLE hMonitorThread = CreateThread(NULL, 0, MonitorUsage, (LPVOID)&monitor_running, 0, NULL);
+	if(hMonitorThread == NULL)
+	{
+		printf("Failed to start monitoring thread.\n");
+	}
+
 	while(*keep_running)
 	{
 		recvLen = recvfrom(udpSocket, buffer, sizeof(buffer) - 1, 0, (struct sockaddr*)&client, &clientLen);
@@ -245,10 +266,37 @@ int start_listening_media(const char* ip_address, int* port_no, volatile bool* k
 			}
 		}
 
+		LARGE_INTEGER start, end;
+		QueryPerformanceCounter(&start);
+
 		rtp_filtering((uint8_t*)buffer, recvLen, &pcm_buffer, path);
+
+		QueryPerformanceCounter(&end);
+
+		double latency_ms = (double)(end.QuadPart - start.QuadPart) * 1000 / freq.QuadPart;
+
+		total_latency += latency_ms;
+		packet_count++;
+
+		if(csv)
+		{
+			fprintf(csv, "%d,%.3f\n", packet_count, latency_ms);
+		}
+
 		buffer[recvLen] = '\0';
 		trigger_data_rec((const char*)buffer);
 	}
+
+	if(csv && packet_count > 0) 
+	{
+		double avgLatency = total_latency / packet_count;
+		fprintf(csv, "Average,%.3f\n", avgLatency);
+		fclose(csv);
+	}
+
+	monitor_running = false;
+	WaitForSingleObject(hMonitorThread, INFINITE);
+	CloseHandle(hMonitorThread);
 
 	free_PCM_buffer(&pcm_buffer);
 	closesocket(udpSocket);
@@ -256,4 +304,40 @@ int start_listening_media(const char* ip_address, int* port_no, volatile bool* k
 	printf("Socket closed.\n");
 
 	return 1;
+}
+
+DWORD WINAPI MonitorUsage(LPVOID param)
+{
+	HANDLE hProcess = GetCurrentProcess();
+	PROCESS_MEMORY_COUNTERS pmc;
+	FILETIME ftCreate, ftExit, ftKernel, ftUser;
+
+	FILE* f = fopen("resource_log.csv", "w");
+	if(!f) 
+	{
+		printf("Failed to open resource_log.csv\n");
+		return 1;
+	}
+	fprintf(f, "Time,MemoryKB,CPUTimeMs\n");
+	DWORD startTime = GetTickCount();
+
+	volatile bool* running = (volatile bool*)param;
+
+	while(*running)
+	{
+		GetProcessMemoryInfo(hProcess, &pmc, sizeof(pmc));
+		GetProcessTimes(hProcess, &ftCreate, &ftExit, &ftKernel, &ftUser);
+
+		ULONGLONG user = (((ULONGLONG)ftUser.dwHighDateTime) << 32) | ftUser.dwLowDateTime;
+		ULONGLONG kernel = (((ULONGLONG)ftKernel.dwHighDateTime) << 32) | ftKernel.dwLowDateTime;
+
+		DWORD elapsed = GetTickCount() - startTime;
+		fprintf(f, "%u,%zu,%.2f\n", elapsed, pmc.WorkingSetSize / 1024, (user + kernel) / 10000.0);
+		fflush(f);
+
+		Sleep(1000);
+	}
+
+	fclose(f);
+	return 0;
 }
