@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <opus/opus.h>
 #include "PcmBuffer.h"
 #include "AudioFileCreator.h"
 #include "GlobalVariables.h"

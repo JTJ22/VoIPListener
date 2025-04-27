@@ -1,5 +1,29 @@
 #include "DecodeRtp.h"
 
+OpusDecoder* opus_decoder = NULL;
+int opus_error;
+
+void initialize_opus_decoder()
+{
+	if(opus_decoder == NULL)
+	{
+		opus_decoder = opus_decoder_create(8000, 1, &opus_error);
+		if(opus_error != OPUS_OK)
+		{
+			printf("Opus decoder creation failed: %s\n", opus_strerror(opus_error));
+		}
+	}
+}
+
+void cleanup_opus_decoder()
+{
+	if(opus_decoder != NULL)
+	{
+		opus_decoder_destroy(opus_decoder);
+		opus_decoder = NULL;
+	}
+}
+
 /// <summary>
 /// Filters a packet based upon the rtp version
 /// </summary>
@@ -80,6 +104,40 @@ void rtp_filtering(uint8_t* rec_packet, int pack_length, PcmBuffer* pcm_buffer, 
 		}
 
 		closeBcg729DecoderChannel(g729_decoder);
+	}
+	else if(rtp_type == 111)
+	{
+		if(opus_decoder == NULL)
+		{
+			initialize_opus_decoder();
+		}
+
+		if(opus_decoder != NULL)
+		{
+			int16_t pcm_data[160];
+			int decoded_samples = opus_decode(opus_decoder, message, message_length, pcm_data, 160, 0); 
+
+			if(decoded_samples < 0)
+			{
+				printf("Opus decoding failed: %s\n", opus_strerror(decoded_samples));
+				return;
+			}
+
+			if(pcm_buffer->length + decoded_samples <= pcm_buffer->max_length)
+			{
+				add_to_PCM_buffer(pcm_buffer, pcm_data, decoded_samples);
+			}
+			else
+			{
+				process_PCM_buffer(pcm_buffer, path);
+				add_to_PCM_buffer(pcm_buffer, pcm_data, decoded_samples);
+			}
+		}
+		else
+		{
+			printf("Opus decoder not initialized.\n");
+		}
+
 	}
 	else
 	{

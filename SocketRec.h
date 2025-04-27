@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <psapi.h>
 #include "DecodeRtp.h"
 #include "PcmBuffer.h"
 #include "RTSPHandle.h"

@@ -1,6 +1,4 @@
 #include "SocketRec.h"
-#include <psapi.h>
-
 
 static CallbackFunction s_callback = NULL;
 
@@ -202,7 +200,7 @@ int start_listening_media(const char* ip_address, int* port_no, volatile bool* k
 	}
 
 	struct sockaddr_in server, client;
-	uint8_t buffer[173];
+	uint8_t buffer[1500];
 
 	if(wsa_startup() == 1)
 	{
